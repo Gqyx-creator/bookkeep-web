@@ -1,5 +1,6 @@
+
 import { initCloudbase } from './cloudbase.js';
-import { currentUser, emailLogin, emailSignup, sendSms, phoneLogin, signOut } from './auth.js';
+import { currentUser, emailLogin, emailSignup, completeEmailSignup, cancelEmailSignup, sendSms, phoneLogin, signOut } from './auth.js';
 import { loadEntries, saveEntry } from './ledger.js';
 
 const $ = s => document.querySelector(s); let user = null; let entries = [];
@@ -24,8 +25,10 @@ function csvCell(v) { return `"${String(v ?? '').replaceAll('"', '""')}"`; }
 async function exportCsv() { const all = await loadEntries(user.id || user.uid, ''); const header = ['id','role','date','start','end','amount','type','startDate','endDate','hasTime','hourlyRate','createdAt','updatedAt']; const body = all.map(x => header.map(k => csvCell(x[k])).join(',')); const blob = new Blob([[header.join(','), ...body].join('\n')], { type: 'text/csv;charset=utf-8' }); const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `打工记账备份-${today()}.csv` }); a.click(); URL.revokeObjectURL(a.href); }
 
 document.querySelectorAll('[data-auth-tab]').forEach(b => b.onclick = () => { document.querySelectorAll('[data-auth-tab]').forEach(x => x.classList.toggle('active', x === b)); $('#email-form').classList.toggle('hidden', b.dataset.authTab !== 'email'); $('#phone-form').classList.toggle('hidden', b.dataset.authTab !== 'phone'); });
-$('#email-form').onsubmit = async e => { e.preventDefault(); try { await emailLogin($('#email').value.trim(), $('#password').value); user = await currentUser(); showApp(true); refresh(); } catch (err) { message($('#auth-message'), err.message || '登录失败', true); } };
-$('#email-signup').onclick = async () => { try { await emailSignup($('#email').value.trim(), $('#password').value); message($('#auth-message'), '注册请求已提交，请按邮箱验证邮件完成验证后登录。'); } catch (err) { message($('#auth-message'), err.message || '注册失败', true); } };
+$('#email-form').onsubmit = async e => { e.preventDefault(); const email = $('#email').value.trim(); const password = $('#password').value; try { if (!email || !password) throw new Error('请填写邮箱和密码。'); await emailLogin(email, password); user = await currentUser(); showApp(true); refresh(); } catch (err) { message($('#auth-message'), err.message || '登录失败', true); } };
+$('#email-signup').onclick = async () => { const email = $('#email').value.trim(); const password = $('#password').value; try { if (!email || !password) throw new Error('请先填写邮箱和密码。'); await emailSignup(email, password); $('#pending-email').textContent = email; $('#email-form').classList.add('hidden'); $('#email-verify-form').classList.remove('hidden'); message($('#auth-message'), '验证码已发送至邮箱，请输入后完成注册。'); } catch (err) { message($('#auth-message'), err.message || '注册失败', true); } };
+$('#email-verify-form').onsubmit = async e => { e.preventDefault(); try { const code = $('#email-code').value.trim(); if (!/^\\d{6}$/.test(code)) throw new Error('请输入 6 位邮箱验证码。'); await completeEmailSignup(code); user = await currentUser(); showApp(true); refresh(); } catch (err) { message($('#auth-message'), err.message || '邮箱验证失败', true); } };
+$('#cancel-email-signup').onclick = () => { cancelEmailSignup(); $('#email-verify-form').classList.add('hidden'); $('#email-form').classList.remove('hidden'); message($('#auth-message'), ''); };
 $('#send-code').onclick = async () => { try { const phone = $('#phone').value.replace(/\s/g, ''); if (!/^1\d{10}$/.test(phone)) throw new Error('请输入 11 位中国大陆手机号。'); await sendSms(phone); message($('#auth-message'), '验证码已发送，请查收短信。'); } catch (err) { message($('#auth-message'), err.message || '发送失败', true); } };
 $('#phone-form').onsubmit = async e => { e.preventDefault(); try { await phoneLogin($('#sms-code').value.trim()); user = await currentUser(); showApp(true); refresh(); } catch (err) { message($('#auth-message'), err.message || '验证码登录失败', true); } };
 $('#new-entry').onclick = () => openEditor(); $('#close-dialog').onclick = () => $('#entry-dialog').close(); $('#has-time').onchange = toggleTime;
