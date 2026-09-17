@@ -7,7 +7,7 @@ export async function initCloudbase() {
   if (!cloudbase) throw new Error('CloudBase Web SDK 加载失败，请检查网络或安全域名配置。');
   // 先进行真实用户登录；成功后的用户会话用于后续账目读写。
   // 不传匿名 Publishable Key，避免把该 JWT 带入邮箱/短信认证请求。
-  app = cloudbase.init({ env: TCB_CONFIG.env, region: TCB_CONFIG.region, auth: { detectSessionInUrl: true } });
+  app = cloudbase.init({ env: TCB_CONFIG.env, region: TCB_CONFIG.region,accessKey: TCB_CONFIG.accessKey, auth: { detectSessionInUrl: true } });
   auth = app.auth;
   db = app.database();
   return { app, auth, db };
