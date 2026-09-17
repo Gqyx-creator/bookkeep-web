@@ -1,0 +1,70 @@
+[Uploading index.html…]()
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f9d68" />
+  <meta name="description" content="个人打工记账" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./css/app.css" />
+  <title>打工记账</title>
+</head>
+<body>
+  <main class="shell">
+    <section id="auth-screen" class="auth-screen">
+      <div class="auth-card">
+        <div class="brand-mark">¥</div>
+        <h1>打工记账</h1><p>登录后安全保存你的每一笔记录</p>
+        <div class="tabs" role="tablist"><button class="tab active" data-auth-tab="email">邮箱密码</button><button class="tab" data-auth-tab="phone">手机号验证码</button></div>
+        <form id="email-form" class="auth-form">
+          <label>邮箱<input id="email" type="email" autocomplete="email" required placeholder="name@example.com" /></label>
+          <label>密码<input id="password" type="password" autocomplete="current-password" minlength="6" required placeholder="至少 6 位" /></label>
+          <button class="primary" type="submit">登录</button>
+          <button id="email-signup" class="text-button" type="button">没有账号？注册</button>
+        </form>
+        <form id="email-verify-form" class="auth-form hidden">
+          <p>验证码已发送至 <strong id="pending-email"></strong></p>
+          <label>邮箱验证码<input id="email-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required placeholder="6 位验证码" /></label>
+          <button class="primary" type="submit">验证并完成注册</button>
+          <button id="cancel-email-signup" class="text-button" type="button">返回邮箱登录</button>
+        </form>
+        <form id="phone-form" class="auth-form hidden">
+          <label>中国大陆手机号<input id="phone" inputmode="tel" autocomplete="tel" required placeholder="13800000000" /></label>
+          <div class="code-row"><label>验证码<input id="sms-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6 位验证码" /></label><button id="send-code" class="secondary" type="button">发送验证码</button></div>
+          <button class="primary" type="submit">验证码登录</button>
+        </form>
+        <p id="auth-message" class="message" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section id="app-screen" class="app-screen hidden">
+      <header class="app-header"><div><p class="eyebrow">我的账本</p><h1>打工记账</h1></div><button id="sign-out" class="icon-button" title="退出登录" aria-label="退出登录">⇥</button></header>
+      <div class="summary"><div><span>收入</span><strong id="income-total" class="income">¥0.00</strong></div><div><span>成本</span><strong id="expense-total" class="expense">¥0.00</strong></div><button id="export-csv" class="backup">导出 CSV 备份</button></div>
+      <div class="toolbar"><input id="month-filter" type="month" aria-label="筛选月份" /><button id="new-entry" class="primary">＋ 新增账目</button></div>
+      <p id="list-message" class="message"></p><section id="ledger-list" class="ledger-list" aria-live="polite"></section>
+    </section>
+  </main>
+
+  <dialog id="entry-dialog" class="entry-dialog">
+    <form id="entry-form" method="dialog">
+      <header><div><p class="eyebrow">账目</p><h2 id="dialog-title">新增账目</h2></div><button id="close-dialog" class="icon-button" type="button" aria-label="关闭">×</button></header>
+      <input id="entry-id" type="hidden" />
+      <fieldset class="type-switch"><label><input type="radio" name="type" value="income" checked />收入</label><label><input type="radio" name="type" value="expense" />成本</label></fieldset>
+      <label>条目名称<input id="role" required maxlength="50" placeholder="例如：咖啡店早班" /></label>
+      <label>金额（元）<input id="amount" required type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" /></label>
+      <label class="time-toggle"><input id="has-time" type="checkbox" />记录开始与结束时间（可选）</label>
+      <div id="time-fields" class="time-fields hidden">
+        <label>开始日期<input id="start-date" type="date" /></label><label>开始时间<input id="start-time" type="time" step="60" /></label>
+        <label>结束日期<input id="end-date" type="date" /></label><label>结束时间<input id="end-time" type="time" step="60" /></label>
+      </div>
+      <p id="entry-message" class="message"></p>
+      <button class="primary save" type="submit">保存账目</button>
+    </form>
+  </dialog>
+  <!-- 固定官方 SDK 版本，避免 latest 自动升级改变浏览器认证行为。 -->
+  <script src="https://static.cloudbase.net/cloudbase-js-sdk/3.0.1/cloudbase.full.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
